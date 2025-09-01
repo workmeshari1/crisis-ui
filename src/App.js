@@ -9,9 +9,12 @@ function App() {
     if (!query.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch(`https://crisis-pypw.onrender.com/search?query=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `https://crisis-pypw.onrender.com/search?query=${encodeURIComponent(query)}`
+      );
       const data = await response.json();
-      setResults(Array.isArray(data) ? data : [data]);
+      // ✅ ناخذ فقط results من الـ API
+      setResults(Array.isArray(data.results) ? data.results : []);
     } catch (err) {
       console.error(err);
       alert("❌ خطأ في الاتصال بالـ API");
@@ -34,11 +37,30 @@ function App() {
       <div style={{ marginTop: 20 }}>
         {results.length === 0 && !loading && <p>لا توجد نتائج بعد.</p>}
         {results.map((r, idx) => (
-          <div key={idx} style={{ background: "#1f1f1f", color: "#fff", padding: 14, borderRadius: 8, marginBottom: 12 }}>
-            <b>الوصف:</b> {r.description || r["وصف الحالة أو الحدث"]} <br />
-            <b>الإجراء:</b> <span style={{ background: "#ff6600", color: "#fff", padding: "4px 8px", borderRadius: 6 }}>
-              {r.action || r["الإجراء"]}
+          <div
+            key={idx}
+            style={{
+              background: "#1f1f1f",
+              color: "#fff",
+              padding: 14,
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
+          >
+            <b>الوصف:</b> {r["الوصف"]} <br />
+            <b>الإجراء:</b>{" "}
+            <span
+              style={{
+                background: "#ff6600",
+                color: "#fff",
+                padding: "4px 8px",
+                borderRadius: 6,
+              }}
+            >
+              {r["الإجراء"]}
             </span>
+            <br />
+            <small>🔎 درجة التشابه: {r["درجة_التشابه"].toFixed(2)}</small>
           </div>
         ))}
       </div>
