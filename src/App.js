@@ -1,33 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 function App() {
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState('');
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
-    if (!query) return;
+    if (!query.trim()) return;
+    setLoading(true);
     try {
-      const res = await fetch(`https://crisis-pypw.onrender.com/search?query=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error('خطأ في الاتصال بالـ API');
-      const data = await res.json();
-      setResult(JSON.stringify(data, null, 2));
+      const response = await fetch(`https://crisis-pypw.onrender.com/search?query=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setResults(Array.isArray(data) ? data : [data]);
     } catch (err) {
-      setResult(err.message);
+      console.error(err);
+      alert("❌ خطأ في الاتصال بالـ API");
     }
+    setLoading(false);
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>بحث الكوارث</h1>
-      <input 
-        type="text" 
-        value={query} 
-        onChange={e => setQuery(e.target.value)} 
-        placeholder="اكتب وصف الحالة…" 
-        style={{ width: 300, marginRight: 10 }}
+    <div style={{ padding: 20, fontFamily: "Arial", direction: "rtl" }}>
+      <h1>⚡ دائرة إدارة الكوارث والأزمات الصناعية</h1>
+      <input
+        type="text"
+        placeholder="اكتب وصف الحالة…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ padding: 10, width: "70%", marginRight: 10 }}
       />
-      <button onClick={handleSearch}>بحث</button>
-      <pre style={{ background: '#f0f0f0', padding: 10 }}>{result}</pre>
+      <button onClick={handleSearch} style={{ padding: 10 }}>بحث</button>
+      {loading && <p>جاري البحث...</p>}
+      <div style={{ marginTop: 20 }}>
+        {results.length === 0 && !loading && <p>لا توجد نتائج بعد.</p>}
+        {results.map((r, idx) => (
+          <div key={idx} style={{ background: "#1f1f1f", color: "#fff", padding: 14, borderRadius: 8, marginBottom: 12 }}>
+            <b>الوصف:</b> {r.description || r["وصف الحالة أو الحدث"]} <br />
+            <b>الإجراء:</b> <span style={{ background: "#ff6600", color: "#fff", padding: "4px 8px", borderRadius: 6 }}>
+              {r.action || r["الإجراء"]}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
